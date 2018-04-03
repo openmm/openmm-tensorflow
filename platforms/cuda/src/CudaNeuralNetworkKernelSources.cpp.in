@@ -31,6 +31,6 @@
 
 #include "CudaNeuralNetworkKernelSources.h"
 
-using namespace ExamplePlugin;
+using namespace NNPlugin;
 using namespace std;
 

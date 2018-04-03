@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     try {
         registerNeuralNetworkOpenCLKernelFactories();
         if (argc > 1)
-            Platform::getPlatformByName("OpenCL").setPropertyDefaultValue("OpenCLPrecision", string(argv[1]));
+            Platform::getPlatformByName("OpenCL").setPropertyDefaultValue("Precision", string(argv[1]));
         testForce();
     }
     catch(const std::exception& e) {

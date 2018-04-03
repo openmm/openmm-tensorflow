@@ -30,7 +30,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "CudaNeuralNetworkKernels.h"
-#include "CudaExampleKernelSources.h"
+#include "CudaNeuralNetworkKernelSources.h"
 #include "openmm/internal/ContextImpl.h"
 
 using namespace NNPlugin;
@@ -45,7 +45,7 @@ void CudaCalcNeuralNetworkForceKernel::initialize(const System& system, const Ne
     positionsTensor = workspace.CreateBlob("positions")->GetMutable<TensorCPU>();
     positionsTensor->Resize(3*system.getNumParticles());
     forces.initialize<float>(cu, 3*system.getNumParticles(), "forces");
-    CUmodule module = cu.createModule(OpenCLNeuralNetworkKernelSources::neuralNetworkForce);
+    CUmodule module = cu.createModule(CudaNeuralNetworkKernelSources::neuralNetworkForce);
     addForcesKernel = cu.getKernel(module, "addForces");
 }
 
@@ -71,7 +71,8 @@ double CudaCalcNeuralNetworkForceKernel::execute(ContextImpl& context, bool incl
         TensorCPU tensor = workspace->GetBlob("forces")->Get<TensorCPU>();
         const float* data = tensor.data<float>();
         forces.upload(data);
-        void* args[] = {&forces.getDevicePointer(), &cu.getForce().getDevicePointer(), &cu.getAtomIndexArray().getDevicePointer(), &numParticles};
+        int paddedNumAtoms = cu.getPaddedNumAtoms();
+        void* args[] = {&forces.getDevicePointer(), &cu.getForce().getDevicePointer(), &cu.getAtomIndexArray().getDevicePointer(), &numParticles, &paddedNumAtoms};
         cu.executeKernel(addForcesKernel, args, numParticles);
     }
     return energy;}

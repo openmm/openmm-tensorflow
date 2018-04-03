@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     try {
         registerNeuralNetworkCudaKernelFactories();
         if (argc > 1)
-            Platform::getPlatformByName("CUDA").setPropertyDefaultValue("OpenCLPrecision", string(argv[1]));
+            Platform::getPlatformByName("CUDA").setPropertyDefaultValue("Precision", string(argv[1]));
         testForce();
     }
     catch(const std::exception& e) {

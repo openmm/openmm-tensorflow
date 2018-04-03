@@ -82,6 +82,25 @@ INSTALL (FILES ${API_ONLY_INCLUDE_FILES_INTERNAL} DESTINATION include/internal)
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(serialization/tests)
 
+# Copy test files to the build directory.
+
+file(GLOB_RECURSE TEST_FILES RELATIVE "${CMAKE_SOURCE_DIR}"
+    "${CMAKE_SOURCE_DIR}/tests/*.pb"
+)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+set(COPIED_TEST_FILES)
+foreach(TEST_FILE ${TEST_FILES})
+    set(infile "${CMAKE_SOURCE_DIR}/${TEST_FILE}")
+    set(outfile "${CMAKE_BINARY_DIR}/${TEST_FILE}")
+    add_custom_command(
+        OUTPUT "${outfile}"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${infile}" "${outfile}"
+        DEPENDS "${infile}"
+        COMMENT "CMake-copying file ${infile} to ${outfile}")
+    set(COPIED_TEST_FILES ${COPIED_TEST_FILES} "${outfile}")
+endforeach()
+add_custom_target(CopyTestFiles ALL DEPENDS ${COPIED_TEST_FILES})
+
 # Build the implementations for different platforms
 
 ADD_SUBDIRECTORY(platforms/reference)

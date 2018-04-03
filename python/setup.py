@@ -5,8 +5,8 @@ import sys
 import platform
 
 openmm_dir = '@OPENMM_DIR@'
-nn_plugin_header_dir = '@NNPLUGIN_HEADER_DIR@'
-nn_plugin_library_dir = '@NNPLUGIN_LIBRARY_DIR@'
+nn_plugin_header_dir = '@NN_PLUGIN_HEADER_DIR@'
+nn_plugin_library_dir = '@NN_PLUGIN_LIBRARY_DIR@'
 
 # setup extra compile and link arguments on Mac
 extra_compile_args = []
@@ -18,7 +18,7 @@ if platform.system() == 'Darwin':
 
 extension = Extension(name='_openmmnn',
                       sources=['NNPluginWrapper.cpp'],
-                      libraries=['OpenMM', 'NNPlugin'],
+                      libraries=['OpenMM', 'OpenMMNN'],
                       include_dirs=[os.path.join(openmm_dir, 'include'), nn_plugin_header_dir],
                       library_dirs=[os.path.join(openmm_dir, 'lib'), nn_plugin_library_dir],
                       extra_compile_args=extra_compile_args,

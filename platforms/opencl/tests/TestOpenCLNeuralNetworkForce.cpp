@@ -62,7 +62,7 @@ void testForce() {
         system.addParticle(1.0);
         positions[i] = Vec3(genrand_real2(sfmt), genrand_real2(sfmt), genrand_real2(sfmt))*10;
     }
-    NeuralNetworkForce* force = new NeuralNetworkForce("../tests/central_predict_net.pb", "../tests/central_init_net.pb");
+    NeuralNetworkForce* force = new NeuralNetworkForce("tests/central_predict_net.pb", "tests/central_init_net.pb");
     system.addForce(force);
     
     // Compute the forces and energy.

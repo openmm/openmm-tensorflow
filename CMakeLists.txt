@@ -3,7 +3,7 @@
 #----------------------------------------------------
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
-FIND_PACKAGE(caffe2)
+FIND_PACKAGE(Caffe2)
 INCLUDE_DIRECTORIES("${CAFFE2_INCLUDE_DIRS}")
 
 # We need to know where OpenMM is installed so we can access the headers and libraries.

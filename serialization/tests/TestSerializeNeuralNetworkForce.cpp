@@ -45,7 +45,7 @@ extern "C" void registerNeuralNetworkSerializationProxies();
 void testSerialization() {
     // Create a Force.
 
-    NeuralNetworkForce force("predict.pb", "init.pb");
+    NeuralNetworkForce force("graph.pb");
 
     // Serialize and then deserialize it.
 
@@ -56,8 +56,7 @@ void testSerialization() {
     // Compare the two forces to see if they are identical.
 
     NeuralNetworkForce& force2 = *copy;
-    ASSERT_EQUAL(force.getPredictNetFile(), force2.getPredictNetFile());
-    ASSERT_EQUAL(force.getInitNetFile(), force2.getInitNetFile());
+    ASSERT_EQUAL(force.getFile(), force2.getFile());
 }
 
 int main() {

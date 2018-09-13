@@ -35,7 +35,7 @@
 #include "NeuralNetworkForce.h"
 #include "openmm/internal/ForceImpl.h"
 #include "openmm/Kernel.h"
-#include <caffe2/core/workspace.h>
+#include <c_api.h>
 #include <utility>
 #include <set>
 #include <string>
@@ -67,8 +67,9 @@ public:
 private:
     const NeuralNetworkForce& owner;
     OpenMM::Kernel kernel;
-    caffe2::Workspace workspace;
-    caffe2::NetDef initModel, predictModel;
+    TF_Graph* graph;
+    TF_Session* session;
+    TF_Status* status;
 };
 
 } // namespace NNPlugin

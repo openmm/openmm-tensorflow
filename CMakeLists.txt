@@ -3,13 +3,16 @@
 #----------------------------------------------------
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
-FIND_PACKAGE(Caffe2)
-INCLUDE_DIRECTORIES("${CAFFE2_INCLUDE_DIRS}")
 
 # We need to know where OpenMM is installed so we can access the headers and libraries.
 SET(OPENMM_DIR "/usr/local/openmm" CACHE PATH "Where OpenMM is installed")
 INCLUDE_DIRECTORIES("${OPENMM_DIR}/include")
 LINK_DIRECTORIES("${OPENMM_DIR}/lib" "${OPENMM_DIR}/lib/plugins")
+
+# We need to know where TensorFlow is installed so we can access the headers and libraries.
+SET(TENSORFLOW_DIR "/usr/local" CACHE PATH "Where TensorFlow is installed")
+INCLUDE_DIRECTORIES("${TENSORFLOW_DIR}/include/tensorflow/c")
+LINK_DIRECTORIES("${TENSORFLOW_DIR}/lib")
 
 # Specify the C++ version we are building for.
 SET (CMAKE_CXX_STANDARD 11)
@@ -80,7 +83,7 @@ SET_TARGET_PROPERTIES(${SHARED_NN_TARGET}
     PROPERTIES COMPILE_FLAGS "-DNN_BUILDING_SHARED_LIBRARY ${EXTRA_COMPILE_FLAGS}"
     LINK_FLAGS "${EXTRA_COMPILE_FLAGS}")
 TARGET_LINK_LIBRARIES(${SHARED_NN_TARGET} OpenMM)
-TARGET_LINK_LIBRARIES(${SHARED_NN_TARGET} caffe2)
+TARGET_LINK_LIBRARIES(${SHARED_NN_TARGET} tensorflow)
 INSTALL_TARGETS(/lib RUNTIME_DIRECTORY /lib ${SHARED_NN_TARGET})
 
 # install headers

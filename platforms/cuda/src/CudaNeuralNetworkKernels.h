@@ -49,12 +49,12 @@ public:
     /**
      * Initialize the kernel.
      * 
-     * @param system        the System this kernel will be applied to
-     * @param force         the NeuralNetworkForce this kernel will be used for
-     * @param workspace     the Caffe2 workspace in which to do calculations
-     * @param predictModel  the Caffe2 network to use for computing forces and energy
+     * @param system    the System this kernel will be applied to
+     * @param force     the NeuralNetworkForce this kernel will be used for
+     * @param session   the TensorFlow session in which to do calculations
+     * @param graph     the TensorFlow graph to use for computing forces and energy
      */
-    void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, caffe2::Workspace& workspace, caffe2::NetDef& predictModel);
+    void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, TF_Session* session, TF_Graph* graph);
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *

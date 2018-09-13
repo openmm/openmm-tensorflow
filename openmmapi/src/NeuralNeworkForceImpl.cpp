@@ -33,26 +33,51 @@
 #include "NeuralNetworkKernels.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/internal/ContextImpl.h"
-#include <caffe2/utils/proto_utils.h>
+#include <fstream>
 
 using namespace NNPlugin;
 using namespace OpenMM;
 using namespace std;
 
-NeuralNetworkForceImpl::NeuralNetworkForceImpl(const NeuralNetworkForce& owner) : owner(owner) {
+NeuralNetworkForceImpl::NeuralNetworkForceImpl(const NeuralNetworkForce& owner) : owner(owner), graph(NULL), session(NULL), status(TF_NewStatus()) {
 }
 
 NeuralNetworkForceImpl::~NeuralNetworkForceImpl() {
+    if (session != NULL) {
+        TF_CloseSession(session, status);
+        TF_DeleteSession(session, status);
+    }
+    if (graph != NULL)
+        TF_DeleteGraph(graph);
+    TF_DeleteStatus(status);
 }
 
 void NeuralNetworkForceImpl::initialize(ContextImpl& context) {
-    CAFFE_ENFORCE(ReadProtoFromFile(owner.getPredictNetFile(), &predictModel));
-    CAFFE_ENFORCE(ReadProtoFromFile(owner.getInitNetFile(), &initModel));
-    workspace.CreateBlob("positions");
-    CAFFE_ENFORCE(workspace.RunNetOnce(initModel));
-    CAFFE_ENFORCE(workspace.CreateNet(predictModel));
+    // Load the graph from the file.
+
+    ifstream graphFile(owner.getFile());
+    string graphText((istreambuf_iterator<char>(graphFile)), istreambuf_iterator<char>());
+    TF_Buffer* buffer = TF_NewBufferFromString(graphText.c_str(), graphText.size());
+    graph = TF_NewGraph();
+    TF_ImportGraphDefOptions* importOptions = TF_NewImportGraphDefOptions();
+    TF_GraphImportGraphDef(graph, buffer, importOptions, status);
+    if (TF_GetCode(status) != TF_OK)
+        throw OpenMMException(string("Error loading TensorFlow graph: ")+TF_Message(status));
+    TF_DeleteImportGraphDefOptions(importOptions);
+    TF_DeleteBuffer(buffer);
+
+    // Create the TensorFlow Session.
+
+    TF_SessionOptions* sessionOptions = TF_NewSessionOptions();
+    session = TF_NewSession(graph, sessionOptions, status);
+    if (TF_GetCode(status) != TF_OK)
+        throw OpenMMException(string("Error creating TensorFlow session: ")+TF_Message(status));
+    TF_DeleteSessionOptions(sessionOptions);
+
+    // Create the kernel.
+
     kernel = context.getPlatform().createKernel(CalcNeuralNetworkForceKernel::Name(), context);
-    kernel.getAs<CalcNeuralNetworkForceKernel>().initialize(context.getSystem(), owner, workspace, predictModel);
+    kernel.getAs<CalcNeuralNetworkForceKernel>().initialize(context.getSystem(), owner, session, graph);
 }
 
 double NeuralNetworkForceImpl::calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) {

@@ -34,7 +34,6 @@
 #include "openmm/reference/ReferencePlatform.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
-#include <caffe2/core/init.h>
 #include <vector>
 
 using namespace NNPlugin;
@@ -47,7 +46,6 @@ extern "C" OPENMM_EXPORT void registerPlatforms() {
 extern "C" OPENMM_EXPORT void registerKernelFactories() {
     int argc = 0;
     vector<char**> argv = {NULL};
-    caffe2::GlobalInit(&argc, &argv[0]);
     for (int i = 0; i < Platform::getNumPlatforms(); i++) {
         Platform& platform = Platform::getPlatform(i);
         if (dynamic_cast<ReferencePlatform*>(&platform) != NULL) {

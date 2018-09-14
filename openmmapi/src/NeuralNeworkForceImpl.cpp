@@ -66,6 +66,37 @@ void NeuralNetworkForceImpl::initialize(ContextImpl& context) {
     TF_DeleteImportGraphDefOptions(importOptions);
     TF_DeleteBuffer(buffer);
 
+    // Check that the graph contains all the expected elements and that their types
+    // are supported.
+
+    TF_Output positions = {TF_GraphOperationByName(graph, "positions"), 0};
+    if (positions.oper == NULL)
+        throw OpenMMException("NeuralNetworkForce: the graph does not have a 'positions' input");
+    TF_DataType positionsType = TF_OperationOutputType(positions);
+    if (positionsType != TF_FLOAT && positionsType != TF_DOUBLE)
+        throw OpenMMException("NeuralNetworkForce: 'positions' must have type float32 or float64");
+    TF_DataType boxType = TF_FLOAT;
+    if (owner.usesPeriodicBoundaryConditions()) {
+        TF_Output boxvectors = {TF_GraphOperationByName(graph, "boxvectors"), 0};
+        if (boxvectors.oper == NULL)
+            throw OpenMMException("NeuralNetworkForce: the graph does not have a 'boxvectors' input");
+        boxType = TF_OperationOutputType(boxvectors);
+        if (boxType != TF_FLOAT && boxType != TF_DOUBLE)
+            throw OpenMMException("NeuralNetworkForce: 'boxvectors' must have type float32 or float64");
+    }
+    TF_Output energy = {TF_GraphOperationByName(graph, "energy"), 0};
+    if (energy.oper == NULL)
+        throw OpenMMException("NeuralNetworkForce: the graph does not have an 'energy' output");
+    TF_DataType energyType = TF_OperationOutputType(energy);
+    if (energyType != TF_FLOAT && energyType != TF_DOUBLE)
+        throw OpenMMException("NeuralNetworkForce: 'energy' must have type float32 or float64");
+    TF_Output forces = {TF_GraphOperationByName(graph, "forces"), 0};
+    if (forces.oper == NULL)
+        throw OpenMMException("NeuralNetworkForce: the graph does not have a 'forces' output");
+    TF_DataType forcesType = TF_OperationOutputType(forces);
+    if (forcesType != TF_FLOAT && forcesType != TF_DOUBLE)
+        throw OpenMMException("NeuralNetworkForce: 'forces' must have type float32 or float64");
+
     // Create the TensorFlow Session.
 
     TF_SessionOptions* sessionOptions = TF_NewSessionOptions();
@@ -77,7 +108,8 @@ void NeuralNetworkForceImpl::initialize(ContextImpl& context) {
     // Create the kernel.
 
     kernel = context.getPlatform().createKernel(CalcNeuralNetworkForceKernel::Name(), context);
-    kernel.getAs<CalcNeuralNetworkForceKernel>().initialize(context.getSystem(), owner, session, graph);
+    kernel.getAs<CalcNeuralNetworkForceKernel>().initialize(context.getSystem(), owner, session, graph,
+            positionsType, boxType, energyType, forcesType);
 }
 
 double NeuralNetworkForceImpl::calcForcesAndEnergy(ContextImpl& context, bool includeForces, bool includeEnergy, int groups) {

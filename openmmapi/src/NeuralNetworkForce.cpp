@@ -38,18 +38,21 @@ using namespace NNPlugin;
 using namespace OpenMM;
 using namespace std;
 
-NeuralNetworkForce::NeuralNetworkForce(const std::string& predictNetFile, const std::string& initNetFile) :
-    predictNetFile(predictNetFile), initNetFile(initNetFile) {
+NeuralNetworkForce::NeuralNetworkForce(const std::string& file) : file(file), usePeriodic(false) {
 }
 
-const string& NeuralNetworkForce::getPredictNetFile() const {
-    return predictNetFile;
-}
-
-const string& NeuralNetworkForce::getInitNetFile() const {
-    return initNetFile;
+const string& NeuralNetworkForce::getFile() const {
+    return file;
 }
 
 ForceImpl* NeuralNetworkForce::createImpl() const {
     return new NeuralNetworkForceImpl(*this);
+}
+
+void NeuralNetworkForce::setUsesPeriodicBoundaryConditions(bool periodic) {
+    usePeriodic = periodic;
+}
+
+bool NeuralNetworkForce::usesPeriodicBoundaryConditions() const {
+    return usePeriodic;
 }

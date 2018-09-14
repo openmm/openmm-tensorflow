@@ -43,17 +43,24 @@ namespace NNPlugin {
  */
 class ReferenceCalcNeuralNetworkForceKernel : public CalcNeuralNetworkForceKernel {
 public:
-    ReferenceCalcNeuralNetworkForceKernel(std::string name, const OpenMM::Platform& platform) : CalcNeuralNetworkForceKernel(name, platform) {
+    ReferenceCalcNeuralNetworkForceKernel(std::string name, const OpenMM::Platform& platform) : CalcNeuralNetworkForceKernel(name, platform),
+            positionsTensor(NULL), boxVectorsTensor(NULL) {
     }
+    ~ReferenceCalcNeuralNetworkForceKernel();
     /**
      * Initialize the kernel.
      * 
-     * @param system        the System this kernel will be applied to
-     * @param force         the NeuralNetworkForce this kernel will be used for
-     * @param workspace     the Caffe2 workspace in which to do calculations
-     * @param predictModel  the Caffe2 network to use for computing forces and energy
+     * @param system         the System this kernel will be applied to
+     * @param force          the NeuralNetworkForce this kernel will be used for
+     * @param session        the TensorFlow session in which to do calculations
+     * @param graph          the TensorFlow graph to use for computing forces and energy
+     * @param positionsType  the data type of the "positions" tensor
+     * @param boxType        the data type of the "boxvectors" tensor
+     * @param energyType     the data type of the "energy" tensor
+     * @param forcesType     the data type of the "forces" tensor
      */
-    void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, caffe2::Workspace& workspace, caffe2::NetDef& predictModel);
+    void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, TF_Session* session, TF_Graph* graph,
+                    TF_DataType positionsType, TF_DataType boxType, TF_DataType energyType, TF_DataType forcesType);
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *
@@ -64,10 +71,13 @@ public:
      */
     double execute(OpenMM::ContextImpl& context, bool includeForces, bool includeEnergy);
 private:
-    caffe2::Workspace* workspace;
-    caffe2::NetDef* predictModel;
-    caffe2::TensorCPU* positionsTensor;
-    std::vector<float> positions;
+    TF_Session* session;
+    TF_Graph* graph;
+    TF_Tensor* positionsTensor;
+    TF_Tensor* boxVectorsTensor;
+    TF_DataType positionsType, boxType, energyType, forcesType;
+    std::vector<float> positions, boxVectors;
+    bool usePeriodic;
 };
 
 } // namespace NNPlugin

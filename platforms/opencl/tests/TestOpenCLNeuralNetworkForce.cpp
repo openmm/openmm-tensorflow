@@ -62,7 +62,7 @@ void testForce() {
         system.addParticle(1.0);
         positions[i] = Vec3(genrand_real2(sfmt), genrand_real2(sfmt), genrand_real2(sfmt))*10;
     }
-    NeuralNetworkForce* force = new NeuralNetworkForce("tests/central_predict_net.pb", "tests/central_init_net.pb");
+    NeuralNetworkForce* force = new NeuralNetworkForce("tests/central.pb");
     system.addForce(force);
     
     // Compute the forces and energy.
@@ -85,12 +85,53 @@ void testForce() {
     ASSERT_EQUAL_TOL(expectedEnergy, state.getPotentialEnergy(), 1e-5);
 }
 
+void testPeriodicForce() {
+    // Create a random cloud of particles.
+
+    const int numParticles = 10;
+    System system;
+    system.setDefaultPeriodicBoxVectors(Vec3(2, 0, 0), Vec3(0, 3, 0), Vec3(0, 0, 4));
+    vector<Vec3> positions(numParticles);
+    OpenMM_SFMT::SFMT sfmt;
+    init_gen_rand(0, sfmt);
+    for (int i = 0; i < numParticles; i++) {
+        system.addParticle(1.0);
+        positions[i] = Vec3(genrand_real2(sfmt), genrand_real2(sfmt), genrand_real2(sfmt))*10;
+    }
+    NeuralNetworkForce* force = new NeuralNetworkForce("tests/periodic.pb");
+    force->setUsesPeriodicBoundaryConditions(true);
+    system.addForce(force);
+
+    // Compute the forces and energy.
+
+    VerletIntegrator integ(1.0);
+    Platform& platform = Platform::getPlatformByName("OpenCL");
+    Context context(system, integ, platform);
+    context.setPositions(positions);
+    State state = context.getState(State::Energy | State::Forces);
+
+    // See if the energy is correct.  The network defines a potential of the form E(r) = |r|^2
+
+    double expectedEnergy = 0;
+    for (int i = 0; i < numParticles; i++) {
+        Vec3 pos = positions[i];
+        pos[0] -= floor(pos[0]/2.0)*2.0;
+        pos[1] -= floor(pos[1]/3.0)*3.0;
+        pos[2] -= floor(pos[2]/4.0)*4.0;
+        double r = sqrt(pos.dot(pos));
+        expectedEnergy += r*r;
+        ASSERT_EQUAL_VEC(pos*(-2.0), state.getForces()[i], 1e-5);
+    }
+    ASSERT_EQUAL_TOL(expectedEnergy, state.getPotentialEnergy(), 1e-5);
+}
+
 int main(int argc, char* argv[]) {
     try {
         registerNeuralNetworkOpenCLKernelFactories();
         if (argc > 1)
             Platform::getPlatformByName("OpenCL").setPropertyDefaultValue("Precision", string(argv[1]));
         testForce();
+        testPeriodicForce();
     }
     catch(const std::exception& e) {
         std::cout << "exception: " << e.what() << std::endl;

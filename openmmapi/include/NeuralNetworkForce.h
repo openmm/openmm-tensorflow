@@ -41,33 +41,28 @@ namespace NNPlugin {
 
 /**
  * This class implements forces that are defined by user-supplied neural networks.
- * It uses the Caffe2 library to perform the computations. */
+ * It uses the TensorFlow library to perform the computations. */
 
 class OPENMM_EXPORT_NN NeuralNetworkForce : public OpenMM::Force {
 public:
     /**
-     * Create a NeuralNetworkForce.  The network is defined by a pair of files in
-     * the format used by Caffe2.
+     * Create a NeuralNetworkForce.  The network is defined by a TensorFlow graph saved
+     * to a binary protocol buffer file.
      *
-     * @param predictNetFile   the path to the file containing the prediction network
-     * @param initNetFile      the path to the file containing the initialization network
+     * @param file   the path to the file containing the network
      */
-    NeuralNetworkForce(const std::string& predictNetFile, const std::string& initNetFile);
+    NeuralNetworkForce(const std::string& file);
     /**
-     * Get the path to the file containing the prediction network.
+     * Get the path to the file containing the graph.
      */
-    const std::string& getPredictNetFile() const;
-    /**
-     * Get the path to the file containing the initialization network.
-     */
-    const std::string& getInitNetFile() const;
-    bool usesPeriodicBoundaryConditions() const {
-        return false;
-    }
+    const std::string& getFile() const;
+    void setUsesPeriodicBoundaryConditions(bool periodic);
+    bool usesPeriodicBoundaryConditions() const;
 protected:
     OpenMM::ForceImpl* createImpl() const;
 private:
-    std::string predictNetFile, initNetFile;
+    std::string file;
+    bool usePeriodic;
 };
 
 } // namespace NNPlugin

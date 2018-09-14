@@ -44,17 +44,24 @@ namespace NNPlugin {
 class CudaCalcNeuralNetworkForceKernel : public CalcNeuralNetworkForceKernel {
 public:
     CudaCalcNeuralNetworkForceKernel(std::string name, const OpenMM::Platform& platform, OpenMM::CudaContext& cu) :
-            CalcNeuralNetworkForceKernel(name, platform), hasInitializedKernel(false), cu(cu) {
+            CalcNeuralNetworkForceKernel(name, platform), hasInitializedKernel(false), cu(cu),
+            positionsTensor(NULL), boxVectorsTensor(NULL) {
     }
+    ~CudaCalcNeuralNetworkForceKernel();
     /**
      * Initialize the kernel.
      * 
-     * @param system        the System this kernel will be applied to
-     * @param force         the NeuralNetworkForce this kernel will be used for
-     * @param workspace     the Caffe2 workspace in which to do calculations
-     * @param predictModel  the Caffe2 network to use for computing forces and energy
+     * @param system         the System this kernel will be applied to
+     * @param force          the NeuralNetworkForce this kernel will be used for
+     * @param session        the TensorFlow session in which to do calculations
+     * @param graph          the TensorFlow graph to use for computing forces and energy
+     * @param positionsType  the data type of the "positions" tensor
+     * @param boxType        the data type of the "boxvectors" tensor
+     * @param energyType     the data type of the "energy" tensor
+     * @param forcesType     the data type of the "forces" tensor
      */
-    void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, caffe2::Workspace& workspace, caffe2::NetDef& predictModel);
+    void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, TF_Session* session, TF_Graph* graph,
+                    TF_DataType positionsType, TF_DataType boxType, TF_DataType energyType, TF_DataType forcesType);
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *
@@ -67,12 +74,13 @@ public:
 private:
     bool hasInitializedKernel;
     OpenMM::CudaContext& cu;
-    caffe2::Workspace* workspace;
-    caffe2::NetDef* predictModel;
-    caffe2::TensorCPU* positionsTensor;
-    std::vector<OpenMM::Vec3> positions;
-    std::vector<float> positionsFloat;
-    OpenMM::CudaArray forces;
+    TF_Session* session;
+    TF_Graph* graph;
+    TF_Tensor* positionsTensor;
+    TF_Tensor* boxVectorsTensor;
+    TF_DataType positionsType, boxType, energyType, forcesType;
+    bool usePeriodic;
+    OpenMM::CudaArray networkForces;
     CUfunction addForcesKernel;
 };
 

@@ -36,7 +36,7 @@
 #include "openmm/KernelImpl.h"
 #include "openmm/Platform.h"
 #include "openmm/System.h"
-#include <caffe2/core/workspace.h>
+#include <c_api.h>
 #include <string>
 
 namespace NNPlugin {
@@ -54,12 +54,17 @@ public:
     /**
      * Initialize the kernel.
      * 
-     * @param system        the System this kernel will be applied to
-     * @param force         the NeuralNetworkForce this kernel will be used for
-     * @param workspace     the Caffe2 workspace in which to do calculations
-     * @param predictModel  the Caffe2 network to use for computing forces and energy
+     * @param system         the System this kernel will be applied to
+     * @param force          the NeuralNetworkForce this kernel will be used for
+     * @param session        the TensorFlow session in which to do calculations
+     * @param graph          the TensorFlow graph to use for computing forces and energy
+     * @param positionsType  the data type of the "positions" tensor
+     * @param boxType        the data type of the "boxvectors" tensor
+     * @param energyType     the data type of the "energy" tensor
+     * @param forcesType     the data type of the "forces" tensor
      */
-    virtual void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, caffe2::Workspace& workspace, caffe2::NetDef& predictModel) = 0;
+    virtual void initialize(const OpenMM::System& system, const NeuralNetworkForce& force, TF_Session* session, TF_Graph* graph,
+                            TF_DataType positionsType, TF_DataType boxType, TF_DataType energyType, TF_DataType forcesType) = 0;
     /**
      * Execute the kernel to calculate the forces and/or energy.
      *

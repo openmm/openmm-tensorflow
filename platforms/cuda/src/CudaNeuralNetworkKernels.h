@@ -44,8 +44,10 @@ namespace NNPlugin {
 class CudaCalcNeuralNetworkForceKernel : public CalcNeuralNetworkForceKernel {
 public:
     CudaCalcNeuralNetworkForceKernel(std::string name, const OpenMM::Platform& platform, OpenMM::CudaContext& cu) :
-            CalcNeuralNetworkForceKernel(name, platform), hasInitializedKernel(false), cu(cu) {
+            CalcNeuralNetworkForceKernel(name, platform), hasInitializedKernel(false), cu(cu),
+            positionsTensor(NULL), boxVectorsTensor(NULL) {
     }
+    ~CudaCalcNeuralNetworkForceKernel();
     /**
      * Initialize the kernel.
      * 
@@ -72,12 +74,13 @@ public:
 private:
     bool hasInitializedKernel;
     OpenMM::CudaContext& cu;
-    caffe2::Workspace* workspace;
-    caffe2::NetDef* predictModel;
-    caffe2::TensorCPU* positionsTensor;
-    std::vector<OpenMM::Vec3> positions;
-    std::vector<float> positionsFloat;
-    OpenMM::CudaArray forces;
+    TF_Session* session;
+    TF_Graph* graph;
+    TF_Tensor* positionsTensor;
+    TF_Tensor* boxVectorsTensor;
+    TF_DataType positionsType, boxType, energyType, forcesType;
+    bool usePeriodic;
+    OpenMM::CudaArray networkForces;
     CUfunction addForcesKernel;
 };
 

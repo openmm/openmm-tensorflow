@@ -36,7 +36,6 @@
 #include "openmm/internal/windowsExport.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
-#include <caffe2/core/init.h>
 #include <vector>
 
 using namespace NNPlugin;
@@ -50,7 +49,6 @@ extern "C" OPENMM_EXPORT void registerKernelFactories() {
     try {
         int argc = 0;
         vector<char**> argv = {NULL};
-        caffe2::GlobalInit(&argc, &argv[0]);
         Platform& platform = Platform::getPlatformByName("CUDA");
         CudaNeuralNetworkKernelFactory* factory = new CudaNeuralNetworkKernelFactory();
         platform.registerKernelFactory(CalcNeuralNetworkForceKernel::Name(), factory);

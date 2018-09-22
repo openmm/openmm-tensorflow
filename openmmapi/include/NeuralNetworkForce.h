@@ -56,7 +56,15 @@ public:
      * Get the path to the file containing the graph.
      */
     const std::string& getFile() const;
+    /**
+     * Set whether this force makes use of periodic boundary conditions.  If this is set
+     * to true, the TensorFlow graph must include a 3x3 tensor called "boxvectors", which
+     * is set to the current periodic box vectors.
+     */
     void setUsesPeriodicBoundaryConditions(bool periodic);
+    /**
+     * Get whether this force makes use of periodic boundary conditions.
+     */
     bool usesPeriodicBoundaryConditions() const;
 protected:
     OpenMM::ForceImpl* createImpl() const;

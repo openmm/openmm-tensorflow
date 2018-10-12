@@ -18,9 +18,9 @@ namespace NNPlugin {
 
 class NeuralNetworkForce : public OpenMM::Force {
 public:
-    NeuralNetworkForce(const std::string& predictNetFile, const std::string& initNetFile);
-    const std::string& getPredictNetFile() const;
-    const std::string& getInitNetFile() const;
+    NeuralNetworkForce(const std::string& file);
+    const std::string& getFile() const;
+    void setUsesPeriodicBoundaryConditions(bool periodic);
     bool usesPeriodicBoundaryConditions() const;
 };
 

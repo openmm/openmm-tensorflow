@@ -33,7 +33,6 @@
 #include "NeuralNetworkKernels.h"
 #include "openmm/OpenMMException.h"
 #include "openmm/internal/ContextImpl.h"
-#include <fstream>
 
 using namespace NNPlugin;
 using namespace OpenMM;
@@ -55,9 +54,8 @@ NeuralNetworkForceImpl::~NeuralNetworkForceImpl() {
 void NeuralNetworkForceImpl::initialize(ContextImpl& context) {
     // Load the graph from the file.
 
-    ifstream graphFile(owner.getFile());
-    string graphText((istreambuf_iterator<char>(graphFile)), istreambuf_iterator<char>());
-    TF_Buffer* buffer = TF_NewBufferFromString(graphText.c_str(), graphText.size());
+    string graphProto = owner.getGraphProto();
+    TF_Buffer* buffer = TF_NewBufferFromString(graphProto.c_str(), graphProto.size());
     graph = TF_NewGraph();
     TF_ImportGraphDefOptions* importOptions = TF_NewImportGraphDefOptions();
     TF_GraphImportGraphDef(graph, buffer, importOptions, status);

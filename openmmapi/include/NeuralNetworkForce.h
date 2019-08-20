@@ -57,6 +57,10 @@ public:
      */
     const std::string& getFile() const;
     /**
+     * Get the content of the protocol buffer defining the graph.
+     */
+    const std::string& getGraphProto() const;
+    /**
      * Set whether this force makes use of periodic boundary conditions.  If this is set
      * to true, the TensorFlow graph must include a 3x3 tensor called "boxvectors", which
      * is set to the current periodic box vectors.
@@ -69,7 +73,7 @@ public:
 protected:
     OpenMM::ForceImpl* createImpl() const;
 private:
-    std::string file;
+    std::string file, graphProto;
     bool usePeriodic;
 };
 

@@ -76,6 +76,21 @@ f = NeuralNetworkForce('graph.pb')
 system.addForce(f)
 ```
 
+Alternatively, in Python (but not C++) you can directly pass a `tf.Graph` to the
+constructor without writing it to a file first:
+
+```python
+f = NeuralNetworkForce(graph)
+```
+
+If the graph includes any variables, pass a `tf.Session` as the second argument.
+It will use TensorFlow's `freeze_graph` utility to create a frozen version of the
+graph in which variables have been replaced with values taken from the session:
+
+```python
+f = NeuralNetworkForce(graph, session)
+```
+
 When defining the graph to perform a calculation, you may want to apply
 periodic boundary conditions.  To do this, call `setUsesPeriodicBoundaryConditions(True)`
 on the `NeuralNetworkForce`.  The graph is then expected to contain an input

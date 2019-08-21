@@ -70,10 +70,9 @@ IF (APPLE)
 ENDIF (APPLE)
 
 INSTALL(TARGETS ${SHARED_TARGET} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/plugins)
-# Ensure that links to the main CUDA library will be resolved.
+# Ensure that links to the main library will be resolved.
 IF (APPLE)
-    SET(CUDA_LIBRARY libOpenMMCUDA.dylib)
-    INSTALL(CODE "EXECUTE_PROCESS(COMMAND install_name_tool -change ${CUDA_LIBRARY} @loader_path/${CUDA_LIBRARY} ${CMAKE_INSTALL_PREFIX}/lib/plugins/lib${SHARED_TARGET}.dylib)")
+    INSTALL(CODE "EXECUTE_PROCESS(COMMAND install_name_tool -add_rpath @loader_path/.. ${CMAKE_INSTALL_PREFIX}/lib/plugins/lib${SHARED_TARGET}.dylib)")
 ENDIF (APPLE)
 
 SUBDIRS (tests)

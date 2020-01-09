@@ -13,6 +13,18 @@
 #include "openmm/RPMDMonteCarloBarostat.h"
 %}
 
+/*
+ * Convert C++ exceptions to Python exceptions.
+*/
+%exception {
+    try {
+        $action
+    } catch (std::exception &e) {
+        PyErr_SetString(PyExc_Exception, const_cast<char*>(e.what()));
+        return NULL;
+    }
+}
+
 %feature("shadow") NNPlugin::NeuralNetworkForce::NeuralNetworkForce %{
     def __init__(self, *args):
         if len(args) == 1 and isinstance(args[0], str):
@@ -43,6 +55,19 @@ public:
     const std::string& getFile() const;
     void setUsesPeriodicBoundaryConditions(bool periodic);
     bool usesPeriodicBoundaryConditions() const;
+
+    /*
+     * Add methods for casting a Force to a NeuralNetworkForce.
+    */
+    %extend {
+        static NNPlugin::NeuralNetworkForce& cast(OpenMM::Force& force) {
+            return dynamic_cast<NNPlugin::NeuralNetworkForce&>(force);
+        }
+
+        static bool isinstance(OpenMM::Force& force) {
+            return (dynamic_cast<NNPlugin::NeuralNetworkForce*>(&force) != NULL);
+        }
+    }
 };
 
 }
